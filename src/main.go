@@ -1,5 +1,13 @@
 package main
 
-func main() {
+import (
+	"fmt"
+	"os"
+)
 
+func main() {
+	bytes, _ := os.ReadFile("./examples/00.lang")
+	source := string(bytes)
+
+	fmt.Printf("Code: %s\n", source)
 }
