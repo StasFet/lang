@@ -1,0 +1,31 @@
+class CrackingTool {
+  let label: string;
+  let targetToken: string;
+  let wordlist: []string;
+
+  fn mount(label: string, targetToken: string) {
+    this.label = label;
+    this.targetToken = targetToken;
+    this.wordlist = ["password"];
+  }
+
+  fn run() {
+    println("START:", this.label);
+    let i: int = 0;
+    foreach cand in this.wordlist {
+      i = i + 1;
+      println("TRY", i, cand);
+      if this.check(cand, this.targetToken) {
+        println("MATCH:", cand, "after", i, "tries");
+        return;
+      }
+      time.sleep(time.millis(10));
+    }
+    println("NO MATCH after", i, "tries");
+  }
+
+  fn check(a: string, b: string): boolean {
+    // simple deterministic rule — not a real hash or attack
+    (a.length + a[0].codePoint()) == (b.length + b[0].codePoint());
+  }
+}

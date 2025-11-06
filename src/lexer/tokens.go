@@ -76,6 +76,25 @@ const (
 	IN
 )
 
+// lookup for reserved words
+var reserved_lu map[string]TokenKind = map[string]TokenKind{
+	"let":      LET,
+	"const":    CONST,
+	"class":    CLASS,
+	"new":      NEW,
+	"import":   IMPORT,
+	"from":     FROM,
+	"function": FUNCTION,
+	"if":       IF,
+	"else":     ELSE,
+	"foreach":  FOREACH,
+	"while":    WHILE,
+	"for":      FOR,
+	"export":   EXPORT,
+	"typeof":   TYPEOF,
+	"in":       IN,
+}
+
 type Token struct {
 	Kind  TokenKind
 	Value string

@@ -65,7 +65,7 @@ func Tokenise(source string) []Token {
 
 		// TODO: add more context? add more description?
 		if !matched {
-			panic(fmt.Sprintf("Lexer Error -> unrecognised token near %s\n", lex.remainder()))
+			panic(fmt.Sprintf("Lexer Error -> unrecognised token %s (Hex %v) \nnear %s\n", string(lex.at()), lex.at(), lex.remainder()))
 		}
 
 	}
@@ -88,6 +88,26 @@ func skipHandler(lex *lexer, regex *regexp.Regexp) {
 	lex.advanceN(match[1])
 }
 
+func stringHandler(lex *lexer, regex *regexp.Regexp) {
+	match := regex.FindStringIndex(lex.remainder())
+	stringLiteral := lex.remainder()[match[0]:match[1]]
+
+	lex.push(NewToken(STRING, stringLiteral))
+	lex.advanceN(len(stringLiteral))
+}
+
+func symbolHandler(lex *lexer, regex *regexp.Regexp) {
+	match := regex.FindString(lex.remainder())
+
+	if kind, exists := reserved_lu[match]; exists {
+		lex.push(NewToken(kind, match))
+	} else {
+		lex.push(NewToken(IDENTIFIER, match))
+	}
+
+	lex.advanceN(len(match))
+}
+
 // handles a new addition to the lexer for regular symbols. needs kind and tokenkind because it obviously handles lots of different types of tokens
 func defaultHandler(kind TokenKind, value string) regexHandler {
 	return func(lex *lexer, regex *regexp.Regexp) {
@@ -106,9 +126,13 @@ func createLexer(source string) *lexer {
 			//define all patterns
 			// important to define correct order so tokens which are supersets of other tokens
 			// don't get interpreted wrongly. e.g. checking for == before =
-			{regexp.MustCompile(`\s+`), skipHandler},
+			{regexp.MustCompile(`[a-zA-Z_][a-zA-Z0-9_]*`), symbolHandler},
 			{regexp.MustCompile(`[0-9]+(\.[0-9]+)?`), numberHandler},
+			{regexp.MustCompile(`"[^"]*"`), stringHandler},
+			{regexp.MustCompile(`\s+`), skipHandler},
+			{regexp.MustCompile(`\/\/.*`), skipHandler},
 
+			{regexp.MustCompile(`\[`), defaultHandler(OPEN_BRACKET, "[")},
 			{regexp.MustCompile(`\]`), defaultHandler(CLOSE_BRACKET, "]")},
 			{regexp.MustCompile(`\{`), defaultHandler(OPEN_CURLY, "{")},
 			{regexp.MustCompile(`\}`), defaultHandler(CLOSE_CURLY, "}")},
